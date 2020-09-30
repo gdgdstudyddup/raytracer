@@ -7,20 +7,32 @@
 #include "hit/hitable_list.h"
 #include "hit/sphere.h"
 #include "camera/camera.h"
+#include "material/lambertian.h"
 #include "rand48.h"
 
 using namespace std;
 using namespace glm;
-vec3 color(const ray &r, hitable *world)
+vec3 color(const ray &r, hitable *world, int depth)
 {
     hit_record rec;
-    if (world->hit(r, 0.0, 1000.0, rec))
+    if (world->hit(r, 0.0001, 1000.0, rec))
     {
-        return 0.5f * (rec.normal + 1.0f);
+        // return 0.5f * (rec.normal + 1.0f);
+        ray scattered;
+        vec3 attenuation;
+        if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+        {
+            return attenuation * color(scattered, world, depth + 1);
+        }
+        else
+            return vec3(0);
     }
-    vec3 dir = normalize(r.direction());
-    float t = 0.5 * (dir.y + 1.0);
-    return (1.0f - t) * vec3(1.0) + t * vec3(0.5, 0.7, 1.0);
+    else
+    {
+        vec3 dir = normalize(r.direction());
+        float t = 0.5 * (dir.y + 1.0);
+        return (1.0f - t) * vec3(1.0) + t * vec3(0.5, 0.7, 1.0);
+    }
 }
 int main()
 {
@@ -31,10 +43,10 @@ int main()
     vec3 horizontal(4.0, 0.0, 0.0);
     vec3 vertical(0.0, 2.0, 0.0);
     vec3 origin(0.0, 0.0, 0.0);
-    camera cam(vec3(-2,1,1),vec3(0,0,-1),vec3(0,1,0),90,float(nx)/float(ny));
+    camera cam(vec3(-2, 1, 1), vec3(0, 0, -1), vec3(0, 1, 0), 90, float(nx) / float(ny));
     hitable *list[2];
-    list[0] = new sphere(vec3(0, 0, -1), 0.5);
-    list[1] = new sphere(vec3(0, -100.5, -1), 100);
+    list[0] = new sphere(vec3(0, 0, -1), 0.5, new lambertian(vec3(1, 0, 0)));
+    list[1] = new sphere(vec3(0, -100.5, -1), 100, new lambertian(vec3(0, 0, 1)));
     hitable *world = new hitable_list(list, 2);
     ofstream fout("result.ppm");
     if (!fout)
@@ -55,7 +67,7 @@ int main()
                 float v = float(j + drand48()) / float(ny);
                 ray r = cam.get_ray(u, v);
                 vec3 p = r.point_at_parameter(2.0);
-                col += color(r, world);
+                col += color(r, world,0);
             }
             col /= float(ns);
             // float u = float(i) / float(nx);
