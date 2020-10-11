@@ -1,6 +1,10 @@
 {
     "files.associations": {
+<<<<<<< HEAD
         "system_error": "cpp",
         "xlocale": "cpp"
+=======
+        "type_traits": "cpp"
+>>>>>>> 1f69cf59c22a6ab610f8a74d392cb09845281786
     }
 }

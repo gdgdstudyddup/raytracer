@@ -8,6 +8,8 @@
 #include "hit/sphere.h"
 #include "camera/camera.h"
 #include "material/lambertian.h"
+#include "material/metal.h"
+#include "material/dielectric.h"
 #include "rand48.h"
 
 using namespace std;
@@ -36,19 +38,20 @@ vec3 color(const ray &r, hitable *world, int depth)
 }
 int main()
 {
-    int nx = 200;
-    int ny = 100;
+    int nx = 400;
+    int ny = 200;
     int ns = 100;
     vec3 lower_left_corner(-2.0, -1.0, -1.0);
     vec3 horizontal(4.0, 0.0, 0.0);
     vec3 vertical(0.0, 2.0, 0.0);
     vec3 origin(0.0, 0.0, 0.0);
-    camera cam(vec3(-2, 1, 1), vec3(0, 0, -1), vec3(0, 1, 0), 90, float(nx) / float(ny));
-    hitable *list[4];
-    list[0] = new sphere(vec3(0, 0, -1), 0.5, new lambertian(vec3(1, 0, 0)));
-    list[1] = new sphere(vec3(0, -100.5, -1), 100, new lambertian(vec3(0.5, 0.5, 0.5)));
-    list[2] = new sphere(vec3(1, 0, -1), 0.5, new lambertian(vec3(1, 1, 0)));
-    list[3] = new sphere(vec3(-1, 0, -1), 0.5, new lambertian(vec3(0, 0, 1)));
+    camera cam(vec3(-0.3, 0, 0), vec3(0, 0, -1), vec3(0, 1, 0), 90, float(nx) / float(ny));
+    hitable *list[5];
+    list[0] = new sphere(vec3(0, 0, -1), 0.5, new lambertian(vec3(0.1, 0.2, 0.5)));
+    list[1] = new sphere(vec3(0, -100.5, -1), 100, new lambertian(vec3(0.8,0.8,0.0)));
+    list[2] = new sphere(vec3(1, 0, -1), 0.5, new metal(vec3(0.8,0.6,0.2), 0.5));
+    list[3] = new sphere(vec3(-1, 0.0, -1), 0.5, new dielectric(1.5));
+    list[4] = new sphere(vec3(-1, 0, -1), -0.45, new dielectric(1.5));
     hitable *world = new hitable_list(list, 4);
     ofstream fout("result.ppm");
     if (!fout)
@@ -69,7 +72,7 @@ int main()
                 float v = float(j + drand48()) / float(ny);
                 ray r = cam.get_ray(u, v);
                 vec3 p = r.point_at_parameter(2.0);
-                col += color(r, world,0);
+                col += color(r, world, 0);
             }
             col /= float(ns);
             // float u = float(i) / float(nx);

@@ -5,7 +5,7 @@
 #include "../ray/ray.h"
 #include "./material.h"
 #include "../rand48.h"
-vec3 random_in_unit_sphere()
+vec3 random_in_unit_spherel()
 {
     vec3 p;
     do
@@ -34,7 +34,7 @@ lambertian::~lambertian()
 }
 bool lambertian::scatter(const ray &r_in, const hit_record &rec, vec3 &attenuation, ray &scattered) const
 {
-    vec3 target = rec.p + rec.normal + random_in_unit_sphere();
+    vec3 target = rec.p + rec.normal + random_in_unit_spherel();
     scattered=ray(rec.p,target-rec.p);
     attenuation=albedo;
     return true;
